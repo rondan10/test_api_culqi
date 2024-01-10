@@ -17,5 +17,9 @@ http://localhost:3000
 PRUEBAS MEDIANTE POSTMAN
 GET,POST,PUSH
 
+UPLOAD:
+npm i 
+node app.js
+
 
 ![image](https://github.com/rondan10/test_api_culqi/assets/64657711/c209ffb7-4d40-4b94-bd24-db1c22ce6af9)
