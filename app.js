@@ -207,6 +207,7 @@ app.get('/informacion/:token', async (req, res) => {
         mail: informacion.email,
         tarjeta: informacion.cardNumber,
         cvv: informacion.cvv,
+        mesexp : informacion.expirationMonth,
         anioexp : informacion.expirationYear,
         token_validador : informacion.token,
         anioExpiracion: informacion.expirationTime
