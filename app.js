@@ -34,7 +34,7 @@ mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(()=> console.log('conectado a mongodb')) 
   .catch(e => console.log('error de conexión', e))
 
-//  eliminar tokens vencidos
+ //eliminar los datos solicitados (tarjeta)
 const eliminarTokensVencidos = schedule.scheduleJob('*/15 * * * *', async () => {
     try {
       //  tokens vencidos
@@ -100,8 +100,12 @@ app.post('/registro', async (req, res) => {
   //  tokenizar una tarjeta y asociarla a un usuario
   app.post('/tokenizar', async (req, res) => {
     try {
-      const { username, cardNumber, expirationMonth, expirationYear, cvv, email } = req.body;
-  
+      const { username, cardNumber, expirationMonth, expirationYear, cvv, email, token_locals } = req.body;
+      //verifcar el token_localstorage esta presente
+      if(!token_locals){
+        return res.status(401).json({error: 'Acceso no autorizado'});
+      }
+      console.log('Token_local Storage recibido:', token_locals);
       // Validaciones
       const user = await User.findOne({ username });
       if (!user) {
@@ -150,7 +154,7 @@ app.post('/registro', async (req, res) => {
 
   
       const randomChars = crypto.randomBytes(8).toString('hex').slice(0, 16);
-     const token = randomChars;
+      const token = randomChars;
 
 
 
@@ -173,10 +177,10 @@ app.post('/registro', async (req, res) => {
   
       await card.save();
   
-      res.json({ token });
+      res.json({ token , token_locals, success:true});
     } catch (error) {
       console.error('Errrrroooor en tokenizacion',error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      res.status(500).json({ error: 'Error interno del servidor', success:false });
     }
   });
 
@@ -203,6 +207,8 @@ app.get('/informacion/:token', async (req, res) => {
         mail: informacion.email,
         tarjeta: informacion.cardNumber,
         cvv: informacion.cvv,
+        anioexp : informacion.expirationYear,
+        token_validador : informacion.token,
         anioExpiracion: informacion.expirationTime
       });
     } catch (error) {
@@ -231,13 +237,17 @@ app.get('/informacion/:token', async (req, res) => {
       // Genera un token de sesión
       //const token = jwt.sign({ userId: user._id, username: user.username }, 'secreto', { expiresIn: '1h' });
         const randomChars = crypto.randomBytes(8).toString('hex').slice(0, 16);
-        const token = 'pk_test_' + randomChars;
+        const token_locals = 'pk_test_' + randomChars;
         
-      res.json({ token });
+      res.json({ token_locals });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
+  });
+
+  app.get('/', (req, res) => {
+    res.send('¡Bienvenido a la aplicación!');
   });
 
 app.listen(PORT, ()=>{
